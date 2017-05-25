@@ -26,6 +26,7 @@ function civipcp_process_shortcode($attributes, $content = NULL) {
     'page_text' => '',
     'is_thermometer' => '',
     'donate_link_text' => '',
+    'contact_id' => '',
   );
   // params to be sent to civi
   $params = array(
@@ -41,10 +42,20 @@ function civipcp_process_shortcode($attributes, $content = NULL) {
   }
   foreach ($optionalParams as $key => $value) {
     if ($attributes[$key] == 1) {
+      if ($key == 'contact_id') {
+        $params['api.Contact.getsingle'] = array('contact_id' => "\$values.contact_id", 'return' => "display_name");
+      }
       $params['return'][] = $key;
     }
   }
   $pcps = civipcp_find_pcps($params);
+  $eventTitle = civipcp_get_event_title($page_type, $page_id);
+  $formattedContent = civipcp_format_directory($pcps, $optionalParams, $eventTitle);
+  return $formattedContent;
+}
+
+function civipcp_get_event_title() {
+  $eventTitle = NULL;
   if ($page_type == 'event') {
     try {
       $event = civicrm_api3('Event', 'getsingle', array(
@@ -62,9 +73,8 @@ function civipcp_process_shortcode($attributes, $content = NULL) {
     if (!empty($event['title'])) {
       $eventTitle = $event['title'];
     }
+    return $eventTitle;
   }
-  $formattedContent = civipcp_format_directory($pcps, $optionalParams, $eventTitle);
-  return $formattedContent;
 }
 
 function civipcp_find_pcps($params) {
@@ -94,7 +104,12 @@ function civipcp_format_directory($result, $optionalParams, $eventTitle = NULL) 
       if ($pcp['is_active'] == 1) {
         $content .= "<div class=' pcp pcp" . $pcp['id'] . "'>";
         foreach ($pcp as $field => $value) {
-          $content .= "<div class=" . $field . ">" . $value . "</div>";
+          if ($field == 'api.Contact.getsingle') {
+            $content .= "<div class='contact'>Created By: " . $value['display_name'] . "</div>";
+          }
+          else {
+            $content .= "<div class=" . $field . ">" . $value . "</div>";
+          }
         }
         //TODO don't hardcode the url
         $pcpTotal = CRM_Utils_Money::format($totalForPCP);

@@ -1,4 +1,5 @@
 .pcpwidget div.id,
+.pcpwidget div.contact_id,
 .pcpwidget div.is_active {
   display: none;
 }

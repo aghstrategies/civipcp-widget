@@ -1,4 +1,5 @@
-.pcpwidget div.id {
+.pcpwidget div.id,
+.pcpwidget div.is_active {
   display: none;
 }
 
@@ -6,11 +7,27 @@
   font-weight: bold;
   font-size: 20px;
 }
-.pcplink a {
+/*.pcplink a {
   background-color: black;
   padding: 5px;
+}*/
+
+.pcpwidget div {
+  margin-bottom: 5px;
 }
 
-.pcplink a:hover {
+.pcpa:hover {
   text-decoration: none;
+}
+
+.pcp {
+  padding-bottom: 20px;
+}
+
+.total label {
+  font-weight: bold;
+}
+.total {
+  border-top: 1px solid black;
+  font-size: 20px;
 }

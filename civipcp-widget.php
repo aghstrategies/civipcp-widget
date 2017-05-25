@@ -86,7 +86,7 @@ function civipcp_find_pcps($params) {
 
 function civipcp_format_directory($result, $optionalParams, $eventTitle = NULL) {
   $totalRaised = 0;
-  $content = "<div class='pcpwidget'><h1>$eventTitle</h1><div class='total'><label>Total:</label>  $totalRaised</div>";
+  $content = '';
   if (!empty($result['values'])) {
     foreach ($result['values'] as $key => $pcp) {
       $totalForPCP = CRM_PCP_BAO_PCP::thermoMeter($pcp['id']);
@@ -100,12 +100,17 @@ function civipcp_format_directory($result, $optionalParams, $eventTitle = NULL) 
         $pcpTotal = CRM_Utils_Money::format($totalForPCP);
         $content .= "
           <div class='pcptotal'><label>Total Raised So Far:</label>  $pcpTotal</div>
-          <a class='pcpa' href='http://wpmaster/civicrm/?page=CiviCRM&q=civicrm/pcp/info&reset=1&id=" . $pcp['id'] . "&ap=0'><div class='pcplink'>Donate</div></a>
+          <a class='pcpa' href='http://crm.artsunbound.org/civicrm/?page=CiviCRM&q=civicrm/pcp/info&reset=1&id=" . $pcp['id'] . "&ap=0'><div class='pcplink'>Donate</div></a>
         </div>";
       }
     }
+    $totalRaised = CRM_Utils_Money::format($totalRaised);
+    $content .= "</div>";
+    $content = "
+    <div class='pcpwidget'>
+      <h1>$eventTitle</h1>
+      <div class='total'><label>Total:</label>  $totalRaised</div>" . $content;
   }
-  $totalRaised = CRM_Utils_Money::format($totalRaised);
-  $content .= "</div>";
+
   return $content;
 }

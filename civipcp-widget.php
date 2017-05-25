@@ -67,8 +67,8 @@ function civipcp_find_pcps($params) {
 }
 
 function civipcp_format_directory($result, $optionalParams) {
-  $content = "<div class='pcpwidget'>";
   $totalRaised = 0;
+  $content = "<div class='pcpwidget'><div class='total'><label>Total:</label>  $totalRaised</div>";
   if (!empty($result['values'])) {
     foreach ($result['values'] as $key => $pcp) {
       $totalForPCP = CRM_PCP_BAO_PCP::thermoMeter($pcp['id']);
@@ -88,8 +88,6 @@ function civipcp_format_directory($result, $optionalParams) {
     }
   }
   $totalRaised = CRM_Utils_Money::format($totalRaised);
-  $content .= "
-  <div class='total'><label>Total:</label>  $totalRaised</div>
-  </div>";
+  $content .= "</div>";
   return $content;
 }

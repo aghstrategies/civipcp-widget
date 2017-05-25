@@ -14,9 +14,21 @@
 
 .pcpwidget div {
   margin-bottom: 5px;
+  font-family: futura-lt-w01-book,sans-serif;
+}
+
+.pcpa {
+  display: inline;
+  font-family: Arial;
+  color: #fff;
+  font-size: 20px;
+  background: #69C5EB;
+  padding: 10px 20px 10px 20px;
+  text-decoration: none;
 }
 
 .pcpa:hover {
+  background: #3cb0fd;
   text-decoration: none;
 }
 
@@ -28,6 +40,6 @@
   font-weight: bold;
 }
 .total {
-  border-top: 1px solid black;
+  border-bottom: 1px solid black;
   font-size: 20px;
 }

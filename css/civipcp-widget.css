@@ -17,29 +17,34 @@
   font-family: futura-lt-w01-book,sans-serif;
 }
 
-.pcpa {
+.pcplink {
   display: inline;
   font-family: Arial;
   color: #fff;
   font-size: 20px;
   background: #69C5EB;
   padding: 10px 20px 10px 20px;
-  text-decoration: none;
 }
 
-.pcpa:hover {
+.pcplink:hover {
   background: #3cb0fd;
+}
+
+a.pcpa {
   text-decoration: none;
 }
 
 .pcp {
   padding-bottom: 20px;
 }
-
+.pcptotal {
+  padding-bottom: 10px;
+}
 .total label {
   font-weight: bold;
 }
-.total {
+div.total {
   border-bottom: 1px solid black;
+  margin-bottom: 10px;
   font-size: 20px;
 }

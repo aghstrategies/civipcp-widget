@@ -45,7 +45,25 @@ function civipcp_process_shortcode($attributes, $content = NULL) {
     }
   }
   $pcps = civipcp_find_pcps($params);
-  $formattedContent = civipcp_format_directory($pcps, $optionalParams);
+  if ($page_type == 'event') {
+    try {
+      $event = civicrm_api3('Event', 'getsingle', array(
+        'return' => array("title"),
+        'id' => $page_id,
+      ));
+    }
+    catch (CiviCRM_API3_Exception $e) {
+      $error = $e->getMessage();
+      CRM_Core_Error::debug_log_message(ts('API Error %1', array(
+        'domain' => 'civipcp_widget',
+        1 => $error,
+      )));
+    }
+    if (!empty($event['title'])) {
+      $eventTitle = $event['title'];
+    }
+  }
+  $formattedContent = civipcp_format_directory($pcps, $optionalParams, $eventTitle);
   return $formattedContent;
 }
 
@@ -66,9 +84,9 @@ function civipcp_find_pcps($params) {
   }
 }
 
-function civipcp_format_directory($result, $optionalParams) {
+function civipcp_format_directory($result, $optionalParams, $eventTitle = NULL) {
   $totalRaised = 0;
-  $content = "<div class='pcpwidget'><div class='total'><label>Total:</label>  $totalRaised</div>";
+  $content = "<div class='pcpwidget'><h1>$eventTitle</h1><div class='total'><label>Total:</label>  $totalRaised</div>";
   if (!empty($result['values'])) {
     foreach ($result['values'] as $key => $pcp) {
       $totalForPCP = CRM_PCP_BAO_PCP::thermoMeter($pcp['id']);

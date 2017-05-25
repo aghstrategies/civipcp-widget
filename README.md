@@ -21,4 +21,4 @@ Example of how to pass optional parameters: `[civipcp_shortcode page_id=1 page_t
 + goal_amount
 + intro_text: called "welcome" in the ui
 + page_text: called "message" in the ui
-+ contact_id: will show "Created By: {the contacts display name}"
++ contact: will show the contacts display name

@@ -26,7 +26,7 @@ function civipcp_process_shortcode($attributes, $content = NULL) {
     'page_text' => '',
     'is_thermometer' => '',
     'donate_link_text' => '',
-    'contact_id' => '',
+    'contact' => '',
   );
   // params to be sent to civi
   $params = array(
@@ -42,8 +42,8 @@ function civipcp_process_shortcode($attributes, $content = NULL) {
   }
   foreach ($optionalParams as $key => $value) {
     if ($attributes[$key] == 1) {
-      if ($key == 'contact_id') {
-        $params['api.Contact.getsingle'] = array('contact_id' => "\$values.contact_id", 'return' => "display_name");
+      if ($key == 'contact') {
+        $params['return'][] = 'contact_id.display_name';
       }
       $params['return'][] = $key;
     }
@@ -104,12 +104,7 @@ function civipcp_format_directory($result, $optionalParams, $eventTitle = NULL) 
       if ($pcp['is_active'] == 1) {
         $content .= "<div class=' pcp pcp" . $pcp['id'] . "'>";
         foreach ($pcp as $field => $value) {
-          if ($field == 'api.Contact.getsingle') {
-            $content .= "<div class='contact'>Created By: " . $value['display_name'] . "</div>";
-          }
-          else {
-            $content .= "<div class=" . $field . ">" . $value . "</div>";
-          }
+          $content .= "<div class=" . $field . ">" . $value . "</div>";
         }
         //TODO don't hardcode the url
         $pcpTotal = CRM_Utils_Money::format($totalForPCP);

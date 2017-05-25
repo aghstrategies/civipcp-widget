@@ -1,5 +1,6 @@
 README
 ------
+This plugin creates a shortcode that lists Civi Personal Campaign Pages for a contribution page or event page
 
 ### Parameters that must be passed to the shortcode:
 

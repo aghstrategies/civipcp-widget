@@ -54,7 +54,7 @@ function civipcp_process_shortcode($attributes, $content = NULL) {
   return $formattedContent;
 }
 
-function civipcp_get_event_title() {
+function civipcp_get_event_title($page_type, $page_id) {
   $eventTitle = NULL;
   if ($page_type == 'event') {
     try {

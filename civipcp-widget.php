@@ -9,11 +9,19 @@
    License: GPL2
    */
 
+add_action('wp_ajax_nopriv_search_civipcp_names', 'lets_search_civipcp_names');
+add_action('wp_ajax_search_civipcp_names', 'lets_search_civipcp_names');
 add_shortcode('civipcp_shortcode', 'civipcp_process_shortcode');
 civicrm_initialize();
 
 function civipcp_process_shortcode($attributes, $content = NULL) {
+  wp_register_script('civipcp-widget-js', plugins_url('js/civipcp-widget.js', __FILE__), array('jquery', 'underscore'));
   wp_enqueue_style('civipcp-widget-css', plugins_url('css/civipcp-widget.css', __FILE__));
+  $bounce = array(
+    'ajaxurl' => admin_url('admin-ajax.php'),
+  );
+  wp_localize_script('civipcp-widget-js', 'civipcpdir', $bounce);
+  wp_enqueue_script('civipcp-widget-js');
   // params that can be sent to shortcode
   $requiredParams = array(
     'page_type' => '',
@@ -51,7 +59,20 @@ function civipcp_process_shortcode($attributes, $content = NULL) {
   $pcps = civipcp_find_pcps($params);
   $eventTitle = civipcp_get_event_title($page_type, $page_id);
   $formattedContent = civipcp_format_directory($pcps, $optionalParams, $eventTitle);
-  return $formattedContent;
+  $searchDiv = '
+  <div class="post-filter centered">
+      <h3>Search For a Campaign:</h3>
+      <form method="post" action="<?php the_permalink(); ?>" id="civipcp_dir_form">
+        <label for="md-search">Search By Name:</label>
+        <input type="text" name="cp-name-search" id="cp-name-search" placeholder="Enter Name to Search on"/>
+      <div class="buttons">
+        <button class="pcplink" id="dir">Search</button>
+        <button class="pcplink" id="clear">Clear Filters</button>
+      <br />
+      </div>
+      </form>
+    </div>';
+  return "$searchDiv <div id='resultsdiv'>$formattedContent</div>";
 }
 
 function civipcp_get_event_title($page_type, $page_id) {
@@ -123,4 +144,15 @@ function civipcp_format_directory($result, $optionalParams, $eventTitle = NULL) 
   }
 
   return $content;
+}
+
+function lets_search_civipcp_names() {
+  $nameSearch = $_POST['cpnamesearch'];
+  $params['contact_id.display_name'] = array('LIKE' => "%{$nameSearch}%");
+  // print_r($params); die();
+  $searchResults = array(
+    'html' => $params,
+  );
+  echo $_REQUEST['cpnamesearch'];
+  exit;
 }

@@ -87,14 +87,14 @@ class civipcp_search_builder {
       $dao1 = CRM_Core_DAO::singleValueQuery($sql1, $params1);
       $params2 = array(1 => 1);
       $sql2 = "SELECT sum(contrib.total_amount) FROM civicrm_contribution as contrib
-        WHERE contrib.campaign_id = 1
-        AND contrib.contribution_status_id = %1";
+        WHERE contrib.campaign_id = %1
+        AND contrib.contribution_status_id = 1";
       $dao2 = CRM_Core_DAO::singleValueQuery($sql2, $params2);
-      $totalRaised = $dao2 + $dao1;
+      $totalRaised = CRM_Utils_Money::format($dao2 + $dao1);
       $generalInfo = "
       <div class='generalEventInfo'>
         <h1>$eventTitle</h1>
-        <div class='total'><label>Total:</label> " . CRM_Utils_Money::format($totalRaised) . "</div>
+        <div class='total'><label>Total:</label> $totalRaised</div>
       </div>";
       return $generalInfo;
     }

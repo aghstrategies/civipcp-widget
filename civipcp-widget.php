@@ -20,6 +20,7 @@ class civipcp_search_builder {
   var $requiredParams = array(
     'page_type' => '',
     'page_id' => '',
+    'options' => array('limit' => 0),
   );
   var $optionalParams = array(
     'title' => '',
@@ -72,20 +73,43 @@ class civipcp_search_builder {
           1 => $error,
         )));
       }
+      try {
+        $allEventPayments = civicrm_api3('ParticipantPayment', 'get', array(
+          'sequential' => 1,
+          'return' => array("contribution_id.total_amount"),
+          'participant_id.event_id' => $page_id,
+          'options' => array('limit' => 0),
+        ));
+      }
+      catch (CiviCRM_API3_Exception $e) {
+        $error = $e->getMessage();
+        CRM_Core_Error::debug_log_message(ts('API Error %1', array(
+          'domain' => 'civipcp_widget',
+          1 => $error,
+        )));
+      }
+      $totalRaised = 0;
+      foreach ($allEventPayments['values'] as $eventPayment) {
+        $totalRaised = $totalRaised + $eventPayment['contribution_id.total_amount'];
+      }
+      $totalRaised = CRM_Utils_Money::format($totalRaised);
       if (!empty($event['title'])) {
         $eventTitle = $event['title'];
       }
-      return $eventTitle;
+      $generalInfo = "
+      <div class='generalEventInfo'>
+        <h1>$eventTitle</h1>
+        <div class='total'><label>Total:</label>  $totalRaised</div>
+      </div>";
+      return $generalInfo;
     }
   }
 
   public function civipcp_format_directory($result, $optionalParams, $eventTitle = NULL) {
-    $totalRaised = 0;
     $content = '';
     if (!empty($result['values'])) {
       foreach ($result['values'] as $key => $pcp) {
         $totalForPCP = CRM_PCP_BAO_PCP::thermoMeter($pcp['id']);
-        $totalRaised = $totalRaised + $totalForPCP;
         if ($pcp['is_active'] == 1) {
           $content .= "<div class=' pcp pcp" . $pcp['id'] . "'>";
           foreach ($pcp as $field => $value) {
@@ -99,12 +123,11 @@ class civipcp_search_builder {
           </div>";
         }
       }
-      $totalRaised = CRM_Utils_Money::format($totalRaised);
-      $content .= "</div>";
       $content = "
-      <div id='resultsdiv'><div class='pcpwidget'>
-        <h1>$eventTitle</h1>
-        <div class='total'><label>Total:</label>  $totalRaised</div>" . $content . "</div>";
+      <div id='resultsdiv'>
+        <div class='pcpwidget'>
+          " . $content . "
+        </div></div>";
     }
 
     return $content;
@@ -116,7 +139,7 @@ function civipcp_process_shortcode($attributes, $content = NULL) {
   wp_register_script('civipcp-widget-js', plugins_url('js/civipcp-widget.js', __FILE__), array('jquery', 'underscore'));
   wp_enqueue_style('civipcp-widget-css', plugins_url('css/civipcp-widget.css', __FILE__));
   $search = new civipcp_search_builder();
-  // extract(shortcode_atts(array_merge($search->requiredParams, $search->optionalParams), $attributes));
+  extract(shortcode_atts(array_merge($search->requiredParams, $search->optionalParams), $attributes));
   foreach ($search->requiredParams as $key => $value) {
     if (!empty($attributes[$key])) {
       $search->params[$key] = $attributes[$key];
@@ -137,11 +160,12 @@ function civipcp_process_shortcode($attributes, $content = NULL) {
   wp_localize_script('civipcp-widget-js', 'civipcpdir', $bounce);
   wp_enqueue_script('civipcp-widget-js');
   $pcps = $search->civipcp_find_pcps($search->params);
-  $eventTitle = $search->civipcp_get_event_title($page_type, $page_id);
-  $formattedContent = $search->civipcp_format_directory($pcps, $optionalParams, $eventTitle);
+  $generalInfo = $search->civipcp_get_event_title($page_type, $page_id);
+  $formattedContent = $search->civipcp_format_directory($pcps, $optionalParams);
   $searchDiv = '
   <div class="post-filter centered">
-      <h3>Search For a Campaign:</h3>
+    ' . $generalInfo . '
+    <h3>Search For a Campaign:</h3>
       <form method="post" action="<?php the_permalink(); ?>" id="civipcp_dir_form">
         <label for="md-search">Search By Name:</label>
         <input type="text" name="cp-name-search" id="cp-name-search" placeholder="Enter Name to Search on"/>

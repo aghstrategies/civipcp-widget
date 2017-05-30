@@ -73,33 +73,28 @@ class civipcp_search_builder {
           1 => $error,
         )));
       }
-      try {
-        $allEventPayments = civicrm_api3('ParticipantPayment', 'get', array(
-          'sequential' => 1,
-          'return' => array("contribution_id.total_amount"),
-          'participant_id.event_id' => $page_id,
-          'options' => array('limit' => 0),
-        ));
-      }
-      catch (CiviCRM_API3_Exception $e) {
-        $error = $e->getMessage();
-        CRM_Core_Error::debug_log_message(ts('API Error %1', array(
-          'domain' => 'civipcp_widget',
-          1 => $error,
-        )));
-      }
-      $totalRaised = 0;
-      foreach ($allEventPayments['values'] as $eventPayment) {
-        $totalRaised = $totalRaised + $eventPayment['contribution_id.total_amount'];
-      }
-      $totalRaised = CRM_Utils_Money::format($totalRaised);
       if (!empty($event['title'])) {
         $eventTitle = $event['title'];
       }
+      $sql1 = "SELECT sum(contrib.total_amount) FROM civicrm_contribution as contrib
+        JOIN civicrm_participant_payment as pp
+        ON contrib.id = pp.contribution_id
+        JOIN civicrm_participant part
+        ON pp.participant_id = part.id
+        WHERE part.event_id = %1
+        AND contrib.contribution_status_id = 1";
+      $params1 = array(1 => $page_id);
+      $dao1 = CRM_Core_DAO::singleValueQuery($sql1, $params1);
+      $params2 = array(1 => 1);
+      $sql2 = "SELECT sum(contrib.total_amount) FROM civicrm_contribution as contrib
+        WHERE contrib.campaign_id = 1
+        AND contrib.contribution_status_id = %1";
+      $dao2 = CRM_Core_DAO::singleValueQuery($sql2, $params2);
+      $totalRaised = $dao2 + $dao1;
       $generalInfo = "
       <div class='generalEventInfo'>
         <h1>$eventTitle</h1>
-        <div class='total'><label>Total:</label>  $totalRaised</div>
+        <div class='total'><label>Total:</label> " . CRM_Utils_Money::format($totalRaised) . "</div>
       </div>";
       return $generalInfo;
     }

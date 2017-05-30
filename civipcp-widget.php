@@ -81,16 +81,14 @@ class civipcp_search_builder {
         ON contrib.id = pp.contribution_id
         JOIN civicrm_participant part
         ON pp.participant_id = part.id
-        WHERE part.event_id = %1
+        WHERE part.event_id = {$page_id}
         AND contrib.contribution_status_id = 1";
-      $params1 = array(1 => $page_id);
-      $dao1 = CRM_Core_DAO::singleValueQuery($sql1, $params1);
-      $params2 = array(1 => 1);
+      $dao1 = CRM_Core_DAO::singleValueQuery($sql1);
       $sql2 = "SELECT sum(contrib.total_amount) FROM civicrm_contribution as contrib
-        WHERE contrib.contribution_campaign_id = %1
+        WHERE contrib.contribution_campaign_id = 1
         AND contrib.contribution_status_id = 1";
-      $dao2 = CRM_Core_DAO::singleValueQuery($sql2, $params2);
-      $totalRaised = CRM_Utils_Money::format($dao2 + $dao1);
+      $dao2 = CRM_Core_DAO::singleValueQuery($sql2);
+      $totalRaised = CRM_Utils_Money::format($dao1 + $dao2);
       $generalInfo = "
       <div class='generalEventInfo'>
         <h1>$eventTitle</h1>

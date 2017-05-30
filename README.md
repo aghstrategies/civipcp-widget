@@ -26,3 +26,4 @@ Example of how to pass optional parameters: `[civipcp_shortcode page_id=1 page_t
 + intro_text: called "welcome" in the ui
 + page_text: called "message" in the ui
 + contact: will show the contacts display name
++ campaign_id: id of campaign to include contributions to to in the total amount raised overall

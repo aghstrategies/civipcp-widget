@@ -14,20 +14,14 @@ add_action('wp_ajax_search_civipcp_names', 'lets_search_civipcp_names');
 add_shortcode('civipcp_shortcode', 'civipcp_process_shortcode');
 civicrm_initialize();
 
-function civipcp_process_shortcode($attributes, $content = NULL) {
-  wp_register_script('civipcp-widget-js', plugins_url('js/civipcp-widget.js', __FILE__), array('jquery', 'underscore'));
-  wp_enqueue_style('civipcp-widget-css', plugins_url('css/civipcp-widget.css', __FILE__));
-  $bounce = array(
-    'ajaxurl' => admin_url('admin-ajax.php'),
-  );
-  wp_localize_script('civipcp-widget-js', 'civipcpdir', $bounce);
-  wp_enqueue_script('civipcp-widget-js');
+class civipcp_search_builder {
+  //Params as produced by the shortcode (no searching)
   // params that can be sent to shortcode
-  $requiredParams = array(
+  var $requiredParams = array(
     'page_type' => '',
     'page_id' => '',
   );
-  $optionalParams = array(
+  var $optionalParams = array(
     'title' => '',
     'goal_amount' => '',
     'intro_text' => '',
@@ -37,28 +31,114 @@ function civipcp_process_shortcode($attributes, $content = NULL) {
     'contact' => '',
   );
   // params to be sent to civi
-  $params = array(
+  var $params = array(
     'sequential' => 1,
     'return' => array('is_active'),
   );
 
-  extract(shortcode_atts(array_merge($requiredParams, $optionalParams), $attributes));
-  foreach ($requiredParams as $key => $value) {
-    if (!empty($attributes[$key])) {
-      $params[$key] = $attributes[$key];
+  public function __construct() {
+
+  }
+
+  public function civipcp_find_pcps($params) {
+    try {
+      $result = civicrm_api3('Pcp', 'get', $params);
+    }
+    catch (CiviCRM_API3_Exception $e) {
+      $error = $e->getMessage();
+      CRM_Core_Error::debug_log_message(ts('API Error %1', array(
+        'domain' => 'civipcp_widget',
+        1 => $error,
+      )));
+    }
+    if (!empty($result['values'])) {
+      return $result;
     }
   }
-  foreach ($optionalParams as $key => $value) {
+
+  public function civipcp_get_event_title($page_type, $page_id) {
+    $eventTitle = NULL;
+    if ($page_type == 'event') {
+      try {
+        $event = civicrm_api3('Event', 'getsingle', array(
+          'return' => array("title"),
+          'id' => $page_id,
+        ));
+      }
+      catch (CiviCRM_API3_Exception $e) {
+        $error = $e->getMessage();
+        CRM_Core_Error::debug_log_message(ts('API Error %1', array(
+          'domain' => 'civipcp_widget',
+          1 => $error,
+        )));
+      }
+      if (!empty($event['title'])) {
+        $eventTitle = $event['title'];
+      }
+      return $eventTitle;
+    }
+  }
+
+  public function civipcp_format_directory($result, $optionalParams, $eventTitle = NULL) {
+    $totalRaised = 0;
+    $content = '';
+    if (!empty($result['values'])) {
+      foreach ($result['values'] as $key => $pcp) {
+        $totalForPCP = CRM_PCP_BAO_PCP::thermoMeter($pcp['id']);
+        $totalRaised = $totalRaised + $totalForPCP;
+        if ($pcp['is_active'] == 1) {
+          $content .= "<div class=' pcp pcp" . $pcp['id'] . "'>";
+          foreach ($pcp as $field => $value) {
+            $content .= "<div class=" . $field . ">" . $value . "</div>";
+          }
+          //TODO don't hardcode the url
+          $pcpTotal = CRM_Utils_Money::format($totalForPCP);
+          $content .= "
+            <div class='pcptotal'><label>Total Raised So Far:</label>  $pcpTotal</div>
+            <a class='pcpa' href='http://crm.artsunbound.org/civicrm/?page=CiviCRM&q=civicrm/pcp/info&reset=1&id=" . $pcp['id'] . "&ap=0'><div class='pcplink'>Donate</div></a>
+          </div>";
+        }
+      }
+      $totalRaised = CRM_Utils_Money::format($totalRaised);
+      $content .= "</div>";
+      $content = "
+      <div id='resultsdiv'><div class='pcpwidget'>
+        <h1>$eventTitle</h1>
+        <div class='total'><label>Total:</label>  $totalRaised</div>" . $content . "</div>";
+    }
+
+    return $content;
+  }
+
+}
+
+function civipcp_process_shortcode($attributes, $content = NULL) {
+  wp_register_script('civipcp-widget-js', plugins_url('js/civipcp-widget.js', __FILE__), array('jquery', 'underscore'));
+  wp_enqueue_style('civipcp-widget-css', plugins_url('css/civipcp-widget.css', __FILE__));
+  $search = new civipcp_search_builder();
+  // extract(shortcode_atts(array_merge($search->requiredParams, $search->optionalParams), $attributes));
+  foreach ($search->requiredParams as $key => $value) {
+    if (!empty($attributes[$key])) {
+      $search->params[$key] = $attributes[$key];
+    }
+  }
+  foreach ($search->optionalParams as $key => $value) {
     if ($attributes[$key] == 1) {
       if ($key == 'contact') {
-        $params['return'][] = 'contact_id.display_name';
+        $search->params['return'][] = 'contact_id.display_name';
       }
-      $params['return'][] = $key;
+      $search->params['return'][] = $key;
     }
   }
-  $pcps = civipcp_find_pcps($params);
-  $eventTitle = civipcp_get_event_title($page_type, $page_id);
-  $formattedContent = civipcp_format_directory($pcps, $optionalParams, $eventTitle);
+  $bounce = array(
+    'ajaxurl' => admin_url('admin-ajax.php'),
+    'params' => $search->params,
+  );
+  wp_localize_script('civipcp-widget-js', 'civipcpdir', $bounce);
+  wp_enqueue_script('civipcp-widget-js');
+  $pcps = $search->civipcp_find_pcps($search->params);
+  $eventTitle = $search->civipcp_get_event_title($page_type, $page_id);
+  $formattedContent = $search->civipcp_format_directory($pcps, $optionalParams, $eventTitle);
   $searchDiv = '
   <div class="post-filter centered">
       <h3>Search For a Campaign:</h3>
@@ -72,87 +152,21 @@ function civipcp_process_shortcode($attributes, $content = NULL) {
       </div>
       </form>
     </div>';
-  return "$searchDiv <div id='resultsdiv'>$formattedContent</div>";
-}
-
-function civipcp_get_event_title($page_type, $page_id) {
-  $eventTitle = NULL;
-  if ($page_type == 'event') {
-    try {
-      $event = civicrm_api3('Event', 'getsingle', array(
-        'return' => array("title"),
-        'id' => $page_id,
-      ));
-    }
-    catch (CiviCRM_API3_Exception $e) {
-      $error = $e->getMessage();
-      CRM_Core_Error::debug_log_message(ts('API Error %1', array(
-        'domain' => 'civipcp_widget',
-        1 => $error,
-      )));
-    }
-    if (!empty($event['title'])) {
-      $eventTitle = $event['title'];
-    }
-    return $eventTitle;
-  }
-}
-
-function civipcp_find_pcps($params) {
-  try {
-    $result = civicrm_api3('Pcp', 'get', $params);
-  }
-  catch (CiviCRM_API3_Exception $e) {
-    $error = $e->getMessage();
-    CRM_Core_Error::debug_log_message(ts('API Error %1', array(
-      'domain' => 'civipcp_widget',
-      1 => $error,
-    )));
-  }
-  // print_r($result); die();
-  if (!empty($result['values'])) {
-    return $result;
-  }
-}
-
-function civipcp_format_directory($result, $optionalParams, $eventTitle = NULL) {
-  $totalRaised = 0;
-  $content = '';
-  if (!empty($result['values'])) {
-    foreach ($result['values'] as $key => $pcp) {
-      $totalForPCP = CRM_PCP_BAO_PCP::thermoMeter($pcp['id']);
-      $totalRaised = $totalRaised + $totalForPCP;
-      if ($pcp['is_active'] == 1) {
-        $content .= "<div class=' pcp pcp" . $pcp['id'] . "'>";
-        foreach ($pcp as $field => $value) {
-          $content .= "<div class=" . $field . ">" . $value . "</div>";
-        }
-        //TODO don't hardcode the url
-        $pcpTotal = CRM_Utils_Money::format($totalForPCP);
-        $content .= "
-          <div class='pcptotal'><label>Total Raised So Far:</label>  $pcpTotal</div>
-          <a class='pcpa' href='http://crm.artsunbound.org/civicrm/?page=CiviCRM&q=civicrm/pcp/info&reset=1&id=" . $pcp['id'] . "&ap=0'><div class='pcplink'>Donate</div></a>
-        </div>";
-      }
-    }
-    $totalRaised = CRM_Utils_Money::format($totalRaised);
-    $content .= "</div>";
-    $content = "
-    <div class='pcpwidget'>
-      <h1>$eventTitle</h1>
-      <div class='total'><label>Total:</label>  $totalRaised</div>" . $content;
-  }
-
-  return $content;
+  echo "$searchDiv $formattedContent";
 }
 
 function lets_search_civipcp_names() {
+  $search = new civipcp_search_builder();
+  $search->params = $_POST['cpparams'];
   $nameSearch = $_POST['cpnamesearch'];
-  $params['contact_id.display_name'] = array('LIKE' => "%{$nameSearch}%");
-  // print_r($params); die();
+  if ($nameSearch) {
+    $search->params['contact_id.display_name'] = array('LIKE' => "%{$nameSearch}%");
+  }
+  $pcps = $search->civipcp_find_pcps($search->params);
+  $formattedContent = $search->civipcp_format_directory($pcps, $optionalParams, $eventTitle);
   $searchResults = array(
-    'html' => $params,
+    'html' => $search->params,
   );
-  echo $_REQUEST['cpnamesearch'];
+  echo $formattedContent;
   exit;
 }

@@ -8,10 +8,16 @@
     var mydata = {
       action: 'search_civipcp_names',
       cpnamesearch: $('#cp-name-search').val(),
+      cpparams: civipcpdir.params,
     };
     $.post(civipcpdir.ajaxurl, mydata, function (response) {
-      console.log(response);
-      $('#resultsdiv').append(response);
+      if ($('#resultsdiv').length == 1) {
+        console.log($('#resultsdiv').length);
+
+        $('#resultsdiv').remove();
+      }
+
+      $('.post-filter').append(response);
     });
   };
 

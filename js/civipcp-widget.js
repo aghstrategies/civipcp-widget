@@ -29,4 +29,10 @@
     searchingTheMembers();
   });
 
+  $('#clear').click(function (event) {
+    $('#cp-name-search').val('');
+    event.preventDefault();
+    searchingTheMembers();
+  });
+
 })(jQuery);

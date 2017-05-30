@@ -51,3 +51,7 @@ div.total {
   margin-bottom: 10px;
   font-size: 20px;
 }
+
+.buttons {
+  display: inline;
+}

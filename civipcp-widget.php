@@ -58,7 +58,7 @@ class civipcp_search_builder {
     }
   }
 
-  public function civipcp_get_event_title($page_type, $page_id) {
+  public function civipcp_get_event_title($page_type, $page_id, $campaign) {
     $eventTitle = NULL;
     if ($page_type == 'event') {
       try {

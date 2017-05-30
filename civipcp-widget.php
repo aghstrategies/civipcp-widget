@@ -85,7 +85,7 @@ class civipcp_search_builder {
         AND contrib.contribution_status_id = 1";
       $dao1 = CRM_Core_DAO::singleValueQuery($sql1);
       $sql2 = "SELECT sum(contrib.total_amount) FROM civicrm_contribution as contrib
-        WHERE contrib.contribution_campaign_id = 1
+        WHERE contrib.campaign_id = 1
         AND contrib.contribution_status_id = 1";
       $dao2 = CRM_Core_DAO::singleValueQuery($sql2);
       $totalRaised = CRM_Utils_Money::format($dao1 + $dao2);

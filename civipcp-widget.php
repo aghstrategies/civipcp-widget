@@ -30,6 +30,7 @@ class civipcp_search_builder {
     'is_thermometer' => '',
     'donate_link_text' => '',
     'contact' => '',
+    'campaign_id' => '',
   );
   // params to be sent to civi
   var $params = array(
@@ -84,10 +85,13 @@ class civipcp_search_builder {
         WHERE part.event_id = {$page_id}
         AND contrib.contribution_status_id = 1";
       $dao1 = CRM_Core_DAO::singleValueQuery($sql1);
-      $sql2 = "SELECT sum(contrib.total_amount) FROM civicrm_contribution as contrib
-        WHERE contrib.campaign_id = 1
-        AND contrib.contribution_status_id = 1";
-      $dao2 = CRM_Core_DAO::singleValueQuery($sql2);
+      $dao2 = 0;
+      if (!empty($campaign)) {
+        $sql2 = "SELECT sum(contrib.total_amount) FROM civicrm_contribution as contrib
+          WHERE contrib.campaign_id = {$campaign}
+          AND contrib.contribution_status_id = 1";
+        $dao2 = CRM_Core_DAO::singleValueQuery($sql2);
+      }
       $totalRaised = CRM_Utils_Money::format($dao1 + $dao2);
       $generalInfo = "
       <div class='generalEventInfo'>
@@ -143,6 +147,9 @@ function civipcp_process_shortcode($attributes, $content = NULL) {
       if ($key == 'contact') {
         $search->params['return'][] = 'contact_id.display_name';
       }
+      if ($key == 'campaign_id') {
+        $campaign = $key;
+      }
       $search->params['return'][] = $key;
     }
   }
@@ -153,7 +160,7 @@ function civipcp_process_shortcode($attributes, $content = NULL) {
   wp_localize_script('civipcp-widget-js', 'civipcpdir', $bounce);
   wp_enqueue_script('civipcp-widget-js');
   $pcps = $search->civipcp_find_pcps($search->params);
-  $generalInfo = $search->civipcp_get_event_title($page_type, $page_id);
+  $generalInfo = $search->civipcp_get_event_title($page_type, $page_id, $campaign);
   $formattedContent = $search->civipcp_format_directory($pcps, $optionalParams);
   $searchDiv = '
   <div class="post-filter centered">

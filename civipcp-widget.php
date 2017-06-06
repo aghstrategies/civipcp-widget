@@ -97,14 +97,14 @@ class civipcp_search_builder {
       if (!empty($event['title']) && $shortcodeTitle == NULL) {
         $shortcodeTitle = $event['title'];
       }
-      $sql1 = "SELECT sum(contrib.total_amount) FROM civicrm_contribution as contrib
-        JOIN civicrm_participant_payment as pp
-        ON contrib.id = pp.contribution_id
-        JOIN civicrm_participant part
-        ON pp.participant_id = part.id
-        WHERE part.event_id = {$page_id}
-        AND contrib.contribution_status_id = 1";
-      $dao1 = CRM_Core_DAO::singleValueQuery($sql1);
+      // $sql1 = "SELECT sum(contrib.total_amount) FROM civicrm_contribution as contrib
+      //   JOIN civicrm_participant_payment as pp
+      //   ON contrib.id = pp.contribution_id
+      //   JOIN civicrm_participant part
+      //   ON pp.participant_id = part.id
+      //   WHERE part.event_id = {$page_id}
+      //   AND contrib.contribution_status_id = 1";
+      // $dao1 = CRM_Core_DAO::singleValueQuery($sql1);
       $dao2 = 0;
       if (!empty($campaign)) {
         $sql2 = "SELECT sum(contrib.total_amount) FROM civicrm_contribution as contrib
@@ -112,11 +112,14 @@ class civipcp_search_builder {
           AND contrib.contribution_status_id = 1";
         $dao2 = CRM_Core_DAO::singleValueQuery($sql2);
       }
-      $totalRaised = CRM_Utils_Money::format($dao1 + $dao2);
+      if ($dao2 > 0) {
+        $totalRaised = CRM_Utils_Money::format($dao2);
+        $total = "<label>Total:</label> $totalRaised";
+      }
       $generalInfo = "
       <div class='generalEventInfo'>
         <h1>$shortcodeTitle</h1>
-        <div class='total'><label>Total:</label> $totalRaised</div>
+        <div class='total'>$total</div>
       </div>";
       return $generalInfo;
     }

@@ -187,7 +187,7 @@ function civipcp_process_shortcode($attributes, $content = NULL) {
     ' . $generalInfo . '
     <div class="pcpsearch">
       <form method="post" action="<?php the_permalink(); ?>" id="civipcp_dir_form">
-        <label for="md-search">Search for a Campagin By Name</label>
+        <label for="md-search"><h3>Search for a Campagin By Name:</h3></label>
         <input type="text" name="cp-name-search" id="cp-name-search" placeholder="Enter Name to Search on"/>
       <div class="buttons">
         <button class="pcplink" id="dir">Search</button>

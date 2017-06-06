@@ -128,15 +128,15 @@ class civipcp_search_builder {
     }
   }
   public function civipcp_setup_pagination($count) {
-    $numberOfPages = ceil($count/5);
+    $numberOfPages = ceil($count / 5);
     //$lastPage = $count%5;
     $x = 1;
     $paginationText = "Page: ";
-    while($x <= $numberOfPages) {
-      $paginationText .= "<a href='#'>$x</a>  ";
+    while ($x <= $numberOfPages) {
+      $paginationText .= "<a class='page' id='" . $x . "' href='#'>$x</a>  ";
       $x++;
-     }
-return $paginationText;
+    }
+    return $paginationText;
   }
 
   public function civipcp_format_directory($result, $optionalParams, $eventTitle = NULL) {
@@ -226,6 +226,10 @@ function lets_search_civipcp_names() {
   $search = new civipcp_search_builder();
   $search->params = $_POST['cpparams'];
   $nameSearch = $_POST['cpnamesearch'];
+  $page = $_POST['cpoffset'];
+  if ($page) {
+    $search->params['options']['offset'] = $page;
+  }
   if ($nameSearch) {
     $search->params['contact_id.display_name'] = array('LIKE' => "%{$nameSearch}%");
   }

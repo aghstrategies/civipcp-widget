@@ -46,6 +46,11 @@ a.pcpa {
 .total label {
   font-weight: bold;
 }
+label.md-search {
+  display: block;
+  margin-bottom: 11px;
+}
+
 div.total {
   border-bottom: 1px solid black;
   margin-bottom: 10px;
@@ -66,9 +71,13 @@ input#cp-name-search {
   margin-bottom: 40px;
 }
 
-@media (min-width: 700px) {
+@media (max-width: 1000px) {
   .buttons {
-    margin: 20px;
-    float: right;
+    padding-top: 11px;
+    float: none;
+    display: block;
+  }
+  input#cp-name-search {
+    width: 100%;
   }
 }

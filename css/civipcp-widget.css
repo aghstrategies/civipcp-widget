@@ -54,4 +54,13 @@ div.total {
 
 .buttons {
   display: inline;
+  float: right;
+}
+
+input#cp-name-search {
+  line-height: 25px;
+}
+
+.pcpsearch {
+  margin-bottom: 20px;
 }

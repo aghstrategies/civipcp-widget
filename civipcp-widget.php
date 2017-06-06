@@ -214,9 +214,9 @@ function civipcp_process_shortcode($attributes, $content = NULL) {
       <div class="buttons">
         <button class="pcplink" id="dir">Search</button>
         <button class="pcplink" id="clear">Clear Filters</button>
-      <div class="pagination">' . $pagination . '</div>
       <br />
       </div>
+      <div class="pagination">' . $pagination . '</div>
       </form>
       </div>
     </div>';

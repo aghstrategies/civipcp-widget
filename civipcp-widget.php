@@ -20,7 +20,7 @@ class civipcp_search_builder {
   var $requiredParams = array(
     'page_type' => '',
     'page_id' => '',
-    'options' => array('limit' => 10),
+    'options' => array('limit' => 5),
   );
   var $optionalParams = array(
     'page_title' => '',

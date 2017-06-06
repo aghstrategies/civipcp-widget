@@ -42,7 +42,7 @@
     $('#cp-name-search').val('');
     event.preventDefault();
     var $page = $(this).attr('id');
-    var $offset = (parseInt($page) * 10) - 10;
+    var $offset = (parseInt($page) * 5) - 5;
     searchingTheMembers($offset);
   });
 

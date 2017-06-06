@@ -63,5 +63,12 @@ input#cp-name-search {
 }
 
 .pcpsearch {
-  margin-bottom: 20px;
+  margin-bottom: 40px;
+}
+
+@media (min-width: 700px) {
+  .buttons {
+    margin: 20px;
+    float: right;
+  }
 }

@@ -166,7 +166,7 @@ function civipcp_process_shortcode($attributes, $content = NULL) {
     if ($attributes[$key] == 1) {
       if ($key == 'contact') {
         $search->params['return'][] = 'contact_id.display_name';
-        $search->params['options'] = array('sort' => "contact_id.sort_name DESC"),
+        $search->params['options'] = array('sort' => "contact_id.sort_name DESC");
       }
       if ($key == 'campaign_id') {
         $campaign = $key;

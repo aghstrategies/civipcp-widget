@@ -43,9 +43,9 @@ class civipcp_search_builder {
 
   }
 
-  public function civipcp_find_pcps($params) {
+  public function civipcp_find_pcps($params, $action) {
     try {
-      $result = civicrm_api3('Pcp', 'get', $params);
+      $result = civicrm_api3('Pcp', $action, $params);
     }
     catch (CiviCRM_API3_Exception $e) {
       $error = $e->getMessage();
@@ -124,7 +124,9 @@ class civipcp_search_builder {
       return $generalInfo;
     }
   }
+  public function civipcp_setup_pagination($count) {
 
+  }
   public function civipcp_format_directory($result, $optionalParams, $eventTitle = NULL) {
     $content = '';
     if (!empty($result['values'])) {
@@ -183,7 +185,10 @@ function civipcp_process_shortcode($attributes, $content = NULL) {
   );
   wp_localize_script('civipcp-widget-js', 'civipcpdir', $bounce);
   wp_enqueue_script('civipcp-widget-js');
-  $pcps = $search->civipcp_find_pcps($search->params);
+  $pcps = $search->civipcp_find_pcps($search->params, 'get');
+  $count = $search->civipcp_find_pcps($search->params, 'getcount');
+  $pagination = civipcp_setup_pagination($count['result']);
+
   $generalInfo = $search->civipcp_get_event_title($page_type, $page_id, $campaign, $page_title);
   $formattedContent = $search->civipcp_format_directory($pcps, $optionalParams);
   $searchDiv = '
@@ -211,7 +216,7 @@ function lets_search_civipcp_names() {
   if ($nameSearch) {
     $search->params['contact_id.display_name'] = array('LIKE' => "%{$nameSearch}%");
   }
-  $pcps = $search->civipcp_find_pcps($search->params);
+  $pcps = $search->civipcp_find_pcps($search->params, 'get');
   $formattedContent = $search->civipcp_format_directory($pcps, $optionalParams, $eventTitle);
   $searchResults = array(
     'html' => $search->params,

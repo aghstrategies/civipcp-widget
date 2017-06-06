@@ -185,6 +185,7 @@ function civipcp_process_shortcode($attributes, $content = NULL) {
   $searchDiv = '
   <div class="post-filter centered">
     ' . $generalInfo . '
+    <div class="pcpsearch">
     <h3>Search For a Campaign:</h3>
       <form method="post" action="<?php the_permalink(); ?>" id="civipcp_dir_form">
         <label for="md-search">Search By Name:</label>
@@ -195,6 +196,7 @@ function civipcp_process_shortcode($attributes, $content = NULL) {
       <br />
       </div>
       </form>
+      </div>
     </div>';
   echo "$searchDiv $formattedContent";
 }

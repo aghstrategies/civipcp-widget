@@ -58,7 +58,9 @@ div.total {
 }
 
 input#cp-name-search {
-  line-height: 25px;
+  /*line-height: 2px;*/
+  font-size: 20px;
+  width: 60%;
 }
 
 .pcpsearch {

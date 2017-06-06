@@ -20,7 +20,7 @@ class civipcp_search_builder {
   var $requiredParams = array(
     'page_type' => '',
     'page_id' => '',
-    'options' => array('limit' => 0),
+    'options' => array('limit' => 10),
   );
   var $optionalParams = array(
     'page_title' => '',
@@ -128,8 +128,16 @@ class civipcp_search_builder {
     }
   }
   public function civipcp_setup_pagination($count) {
-
+    $numberOfPages = intdiv($count, 5);
+    $lastPage = $count%5;
+    $x = 1;
+    $paginationText = "Page: ";
+    while($x <= $numberOfPages) {
+        $paginationText .= "<a href='#'>$x</a>";
+        $x++;
+    }
   }
+
   public function civipcp_format_directory($result, $optionalParams, $eventTitle = NULL) {
     $content = '';
     if (!empty($result['values'])) {
@@ -190,7 +198,7 @@ function civipcp_process_shortcode($attributes, $content = NULL) {
   wp_enqueue_script('civipcp-widget-js');
   $pcps = $search->civipcp_find_pcps($search->params, 'get');
   $count = $search->civipcp_find_pcps($search->params, 'getcount');
-  // $pagination = civipcp_setup_pagination($count['result']);
+  $pagination = civipcp_setup_pagination($count);
 
   $generalInfo = $search->civipcp_get_event_title($page_type, $page_id, $campaign, $page_title);
   $formattedContent = $search->civipcp_format_directory($pcps, $optionalParams);
@@ -204,6 +212,7 @@ function civipcp_process_shortcode($attributes, $content = NULL) {
       <div class="buttons">
         <button class="pcplink" id="dir">Search</button>
         <button class="pcplink" id="clear">Clear Filters</button>
+      <div class="pagination">' . $pagination . '</div>
       <br />
       </div>
       </form>

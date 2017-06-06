@@ -54,8 +54,11 @@ class civipcp_search_builder {
         1 => $error,
       )));
     }
-    if (!empty($result['values'])) {
+    if (!empty($result['values']) && $action == 'get') {
       return $result;
+    }
+    if (!empty($result['result']) && $action == 'getcount') {
+      return $result['result'];
     }
   }
 
@@ -187,7 +190,7 @@ function civipcp_process_shortcode($attributes, $content = NULL) {
   wp_enqueue_script('civipcp-widget-js');
   $pcps = $search->civipcp_find_pcps($search->params, 'get');
   $count = $search->civipcp_find_pcps($search->params, 'getcount');
-  $pagination = civipcp_setup_pagination($count['result']);
+  // $pagination = civipcp_setup_pagination($count['result']);
 
   $generalInfo = $search->civipcp_get_event_title($page_type, $page_id, $campaign, $page_title);
   $formattedContent = $search->civipcp_format_directory($pcps, $optionalParams);

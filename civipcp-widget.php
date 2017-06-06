@@ -20,7 +20,7 @@ class civipcp_search_builder {
   var $requiredParams = array(
     'page_type' => '',
     'page_id' => '',
-    'options' => array('limit' => 10),
+    // 'options' => array('limit' => 5),
   );
   var $optionalParams = array(
     'page_title' => '',
@@ -128,15 +128,15 @@ class civipcp_search_builder {
     }
   }
   public function civipcp_setup_pagination($count) {
-    $numberOfPages = ceil($count/5);
+    $numberOfPages = ceil($count / 5);
     //$lastPage = $count%5;
     $x = 1;
     $paginationText = "Page: ";
-    while($x <= $numberOfPages) {
-      $paginationText .= "<a href='#'>$x</a>  ";
+    while ($x <= $numberOfPages) {
+      $paginationText .= "<a class='page' id='" . $x . "' href='#'>$x</a>  ";
       $x++;
-     }
-return $paginationText;
+    }
+    return $paginationText;
   }
 
   public function civipcp_format_directory($result, $optionalParams, $eventTitle = NULL) {
@@ -179,6 +179,7 @@ function civipcp_process_shortcode($attributes, $content = NULL) {
       $search->params[$key] = $attributes[$key];
     }
   }
+  $search->params['options']['limit'] = 5;
   foreach ($search->optionalParams as $key => $value) {
     if ($attributes[$key] == 1) {
       if ($key == 'contact') {
@@ -213,9 +214,9 @@ function civipcp_process_shortcode($attributes, $content = NULL) {
       <div class="buttons">
         <button class="pcplink" id="dir">Search</button>
         <button class="pcplink" id="clear">Clear Filters</button>
-      <div class="pagination">' . $pagination . '</div>
       <br />
       </div>
+      <div class="pagination">' . $pagination . '</div>
       </form>
       </div>
     </div>';
@@ -226,6 +227,10 @@ function lets_search_civipcp_names() {
   $search = new civipcp_search_builder();
   $search->params = $_POST['cpparams'];
   $nameSearch = $_POST['cpnamesearch'];
+  $page = $_POST['cpoffset'];
+  if ($page) {
+    $search->params['options']['offset'] = $page;
+  }
   if ($nameSearch) {
     $search->params['contact_id.display_name'] = array('LIKE' => "%{$nameSearch}%");
   }

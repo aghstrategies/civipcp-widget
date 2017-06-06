@@ -73,6 +73,10 @@ input#cp-name-search {
   margin-bottom: 27px;
 }
 
+.pagination {
+  padding-top: 11px;
+}
+
 @media (max-width: 1000px) {
   .buttons {
     padding-top: 11px;

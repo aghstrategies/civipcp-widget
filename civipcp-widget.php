@@ -23,6 +23,7 @@ class civipcp_search_builder {
     'options' => array('limit' => 0),
   );
   var $optionalParams = array(
+    'page_title' => '',
     'title' => '',
     'goal_amount' => '',
     'intro_text' => '',
@@ -58,8 +59,27 @@ class civipcp_search_builder {
     }
   }
 
-  public function civipcp_get_event_title($page_type, $page_id, $campaign) {
-    $eventTitle = NULL;
+  public function civipcp_get_event_title($page_type, $page_id, $campaign, $page_title) {
+    $shortcodeTitle = NULL;
+    if ($page_title == 'campaign') {
+      try {
+        $campaignTitle = civicrm_api3('Campaign', 'getsingle', array(
+          'sequential' => 1,
+          'return' => array("title"),
+          'id' => 1,
+        ));
+      }
+      catch (CiviCRM_API3_Exception $e) {
+        $error = $e->getMessage();
+        CRM_Core_Error::debug_log_message(ts('API Error %1', array(
+          'domain' => 'civipcp_widget',
+          1 => $error,
+        )));
+      }
+    }
+    if (!empty($campaignTitle['title'])) {
+      $shortcodeTitle = $campaignTitle['title'];
+    }
     if ($page_type == 'event') {
       try {
         $event = civicrm_api3('Event', 'getsingle', array(
@@ -74,8 +94,8 @@ class civipcp_search_builder {
           1 => $error,
         )));
       }
-      if (!empty($event['title'])) {
-        $eventTitle = $event['title'];
+      if (!empty($event['title']) && $shortcodeTitle == NULL) {
+        $shortcodeTitle = $event['title'];
       }
       $sql1 = "SELECT sum(contrib.total_amount) FROM civicrm_contribution as contrib
         JOIN civicrm_participant_payment as pp
@@ -95,7 +115,7 @@ class civipcp_search_builder {
       $totalRaised = CRM_Utils_Money::format($dao1 + $dao2);
       $generalInfo = "
       <div class='generalEventInfo'>
-        <h1>$eventTitle</h1>
+        <h1>$shortcodeTitle</h1>
         <div class='total'><label>Total:</label> $totalRaised</div>
       </div>";
       return $generalInfo;
@@ -160,7 +180,7 @@ function civipcp_process_shortcode($attributes, $content = NULL) {
   wp_localize_script('civipcp-widget-js', 'civipcpdir', $bounce);
   wp_enqueue_script('civipcp-widget-js');
   $pcps = $search->civipcp_find_pcps($search->params);
-  $generalInfo = $search->civipcp_get_event_title($page_type, $page_id, $campaign);
+  $generalInfo = $search->civipcp_get_event_title($page_type, $page_id, $campaign, $page_title);
   $formattedContent = $search->civipcp_format_directory($pcps, $optionalParams);
   $searchDiv = '
   <div class="post-filter centered">

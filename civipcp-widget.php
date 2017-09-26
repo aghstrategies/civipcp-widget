@@ -181,13 +181,13 @@ function civipcp_process_shortcode($attributes, $content = NULL) {
   }
   $search->params['options']['limit'] = 5;
   foreach ($search->optionalParams as $key => $value) {
+    if ($key == 'campaign_id') {
+      $campaign = $attributes[$key];
+    } 
     if ($attributes[$key] == 1) {
       if ($key == 'contact') {
         $search->params['return'][] = 'contact_id.display_name';
         $search->params['options']['sort'] = "contact_id.sort_name ASC";
-      }
-      if ($key == 'campaign_id') {
-        $campaign = $key;
       }
       $search->params['return'][] = $key;
     }

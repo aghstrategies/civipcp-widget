@@ -69,7 +69,7 @@ class civipcp_search_builder {
         $campaignTitle = civicrm_api3('Campaign', 'getsingle', array(
           'sequential' => 1,
           'return' => array("title"),
-          'id' => 1,
+          'id' => $campaign,
         ));
       }
       catch (CiviCRM_API3_Exception $e) {

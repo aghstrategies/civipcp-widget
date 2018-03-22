@@ -6,7 +6,7 @@
    Version: 1.0
    Author: Alice Frumin, AGH Strategies
    Author URI: https://aghstrategies.com
-   License: AGPL3
+   License: AGPL-3.0
    */
 
 add_action('wp_ajax_nopriv_search_civipcp_names', 'lets_search_civipcp_names');
@@ -165,20 +165,20 @@ HERE;
             TRUE
           );
           $content .= <<<HERE
-    <div class='pcp pcp{$pcp['id']}'>
+    <div class="pcp pcp{$pcp['id']}">
       $fieldMarkup
-      <div class='pcptotal'><label>Total Raised So Far:</label>  $pcpTotal</div>
-      <a class="pcpa" href="$pcpUrl"><div class='pcplink'>Donate</div></a>
+      <div class="pcptotal"><label>Total Raised So Far:</label>  $pcpTotal</div>
+      <a class="pcpa" href="$pcpUrl"><div class="pcplink">Donate</div></a>
     </div>
 HERE;
         }
       }
       $content = <<<HERE
-<div id='resultsdiv'>
-  <div class='pcpwidget'>
+<div id="resultsdiv">
+  <div class="pcpwidget">
     $content
   </div>
-</div>"
+</div>
 HERE;
     }
 
@@ -222,11 +222,12 @@ function civipcp_process_shortcode($attributes, $content = NULL) {
 
   $generalInfo = $search->civipcp_get_event_title($page_type, $page_id, $campaign, $page_title);
   $formattedContent = $search->civipcp_format_directory($pcps, $optionalParams);
-  $searchDiv = '
+  $permalink = get_permalink();
+  $searchDiv = <<<HERE
   <div class="post-filter centered">
-    ' . $generalInfo . '
+    $generalInfo
     <div class="pcpsearch">
-      <form method="post" action="<?php the_permalink(); ?>" id="civipcp_dir_form">
+      <form method="post" action="$permalink" id="civipcp_dir_form">
         <label class="md-search" for="md-search">Search for a campaign by fundraiser name:</label>
         <input type="text" name="cp-name-search" id="cp-name-search" placeholder="Search First and/or Last Name"/>
       <div class="buttons">
@@ -234,10 +235,11 @@ function civipcp_process_shortcode($attributes, $content = NULL) {
         <button class="pcplink" id="clear">Clear Filters</button>
       <br />
       </div>
-      <div class="pagination">' . $pagination . '</div>
+      <div class="pagination">$pagination</div>
       </form>
       </div>
-    </div>';
+    </div>
+HERE;
   echo "$searchDiv $formattedContent";
 }
 

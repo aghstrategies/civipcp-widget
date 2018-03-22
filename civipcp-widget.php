@@ -1,12 +1,12 @@
 <?php
    /*
    Plugin Name: Civicrm PCP Widget
-   Plugin URI: http://my-awesomeness-emporium.com
-   Description: a plugin to create awesomeness and spread joy
+   Plugin URI: https://github.com/aghstrategies/civipcp-widget
+   Description: a shortcode for listing all personal campaign pages for a contribution page or event in CiviCRM
    Version: 1.0
-   Author: AGH Strategies
-   Author URI: http://mrtotallyawesome.com
-   License: GPL2
+   Author: Alice Frumin, AGH Strategies
+   Author URI: https://aghstrategies.com
+   License: AGPL3
    */
 
 add_action('wp_ajax_nopriv_search_civipcp_names', 'lets_search_civipcp_names');

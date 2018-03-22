@@ -145,23 +145,41 @@ class civipcp_search_builder {
       foreach ($result['values'] as $key => $pcp) {
         $totalForPCP = CRM_PCP_BAO_PCP::thermoMeter($pcp['id']);
         if ($pcp['is_active'] == 1) {
-          $content .= "<div class=' pcp pcp" . $pcp['id'] . "'>";
+          $fieldMarkup = '';
           foreach ($pcp as $field => $value) {
-            $content .= "<div class=" . $field . ">" . $value . "</div>";
+            $fieldMarkup .= <<<HERE
+      <div class="$field">$value</div>
+HERE;
           }
-          //TODO don't hardcode the url
           $pcpTotal = CRM_Utils_Money::format($totalForPCP);
-          $content .= "
-            <div class='pcptotal'><label>Total Raised So Far:</label>  $pcpTotal</div>
-            <a class='pcpa' href='http://crm.artsunbound.org/civicrm/?page=CiviCRM&q=civicrm/pcp/info&reset=1&id=" . $pcp['id'] . "&ap=0'><div class='pcplink'>Donate</div></a>
-          </div>";
+          $pcpUrl = CRM_Utils_System::url(
+            'civicrm/pcp/info',
+            array(
+              'reset' => 1,
+              'id' => $pcp['id'],
+              'ap' => 0,
+            ),
+            TRUE,
+            NULL,
+            FALSE,
+            TRUE
+          );
+          $content .= <<<HERE
+    <div class='pcp pcp{$pcp['id']}'>
+      $fieldMarkup
+      <div class='pcptotal'><label>Total Raised So Far:</label>  $pcpTotal</div>
+      <a class="pcpa" href="$pcpUrl"><div class='pcplink'>Donate</div></a>
+    </div>
+HERE;
         }
       }
-      $content = "
-      <div id='resultsdiv'>
-        <div class='pcpwidget'>
-          " . $content . "
-        </div></div>";
+      $content = <<<HERE
+<div id='resultsdiv'>
+  <div class='pcpwidget'>
+    $content
+  </div>
+</div>"
+HERE;
     }
 
     return $content;
@@ -183,7 +201,7 @@ function civipcp_process_shortcode($attributes, $content = NULL) {
   foreach ($search->optionalParams as $key => $value) {
     if ($key == 'campaign_id') {
       $campaign = $attributes[$key];
-    } 
+    }
     if ($attributes[$key] == 1) {
       if ($key == 'contact') {
         $search->params['return'][] = 'contact_id.display_name';

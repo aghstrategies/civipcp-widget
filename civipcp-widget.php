@@ -1,12 +1,12 @@
 <?php
    /*
    Plugin Name: Civicrm PCP Widget
-   Plugin URI: http://my-awesomeness-emporium.com
-   Description: a plugin to create awesomeness and spread joy
+   Plugin URI: https://github.com/aghstrategies/civipcp-widget
+   Description: a shortcode for listing all personal campaign pages for a contribution page or event in CiviCRM
    Version: 1.0
-   Author: AGH Strategies
-   Author URI: http://mrtotallyawesome.com
-   License: GPL2
+   Author: Alice Frumin, AGH Strategies
+   Author URI: https://aghstrategies.com
+   License: AGPL-3.0
    */
 
 add_action('wp_ajax_nopriv_search_civipcp_names', 'lets_search_civipcp_names');
@@ -145,23 +145,41 @@ class civipcp_search_builder {
       foreach ($result['values'] as $key => $pcp) {
         $totalForPCP = CRM_PCP_BAO_PCP::thermoMeter($pcp['id']);
         if ($pcp['is_active'] == 1) {
-          $content .= "<div class=' pcp pcp" . $pcp['id'] . "'>";
+          $fieldMarkup = '';
           foreach ($pcp as $field => $value) {
-            $content .= "<div class=" . $field . ">" . $value . "</div>";
+            $fieldMarkup .= <<<HERE
+      <div class="$field">$value</div>
+HERE;
           }
-          //TODO don't hardcode the url
           $pcpTotal = CRM_Utils_Money::format($totalForPCP);
-          $content .= "
-            <div class='pcptotal'><label>Total Raised So Far:</label>  $pcpTotal</div>
-            <a class='pcpa' href='http://crm.artsunbound.org/civicrm/?page=CiviCRM&q=civicrm/pcp/info&reset=1&id=" . $pcp['id'] . "&ap=0'><div class='pcplink'>Donate</div></a>
-          </div>";
+          $pcpUrl = CRM_Utils_System::url(
+            'civicrm/pcp/info',
+            array(
+              'reset' => 1,
+              'id' => $pcp['id'],
+              'ap' => 0,
+            ),
+            TRUE,
+            NULL,
+            FALSE,
+            TRUE
+          );
+          $content .= <<<HERE
+    <div class="pcp pcp{$pcp['id']}">
+      $fieldMarkup
+      <div class="pcptotal"><label>Total Raised So Far:</label>  $pcpTotal</div>
+      <a class="pcpa" href="$pcpUrl"><div class="pcplink">Donate</div></a>
+    </div>
+HERE;
         }
       }
-      $content = "
-      <div id='resultsdiv'>
-        <div class='pcpwidget'>
-          " . $content . "
-        </div></div>";
+      $content = <<<HERE
+<div id="resultsdiv">
+  <div class="pcpwidget">
+    $content
+  </div>
+</div>
+HERE;
     }
 
     return $content;
@@ -183,7 +201,7 @@ function civipcp_process_shortcode($attributes, $content = NULL) {
   foreach ($search->optionalParams as $key => $value) {
     if ($key == 'campaign_id') {
       $campaign = $attributes[$key];
-    } 
+    }
     if ($attributes[$key] == 1) {
       if ($key == 'contact') {
         $search->params['return'][] = 'contact_id.display_name';
@@ -204,11 +222,12 @@ function civipcp_process_shortcode($attributes, $content = NULL) {
 
   $generalInfo = $search->civipcp_get_event_title($page_type, $page_id, $campaign, $page_title);
   $formattedContent = $search->civipcp_format_directory($pcps, $optionalParams);
-  $searchDiv = '
+  $permalink = get_permalink();
+  $searchDiv = <<<HERE
   <div class="post-filter centered">
-    ' . $generalInfo . '
+    $generalInfo
     <div class="pcpsearch">
-      <form method="post" action="<?php the_permalink(); ?>" id="civipcp_dir_form">
+      <form method="post" action="$permalink" id="civipcp_dir_form">
         <label class="md-search" for="md-search">Search for a campaign by fundraiser name:</label>
         <input type="text" name="cp-name-search" id="cp-name-search" placeholder="Search First and/or Last Name"/>
       <div class="buttons">
@@ -216,10 +235,11 @@ function civipcp_process_shortcode($attributes, $content = NULL) {
         <button class="pcplink" id="clear">Clear Filters</button>
       <br />
       </div>
-      <div class="pagination">' . $pagination . '</div>
+      <div class="pagination">$pagination</div>
       </form>
       </div>
-    </div>';
+    </div>
+HERE;
   echo "$searchDiv $formattedContent";
 }
 
